@@ -42,13 +42,13 @@
         {
             "description": "Namespace in which the ImageStreams for Red Hat Middleware images are installed. These ImageStreams are normally installed in the openshift namespace. You should only need to modify this if you've installed the ImageStreams in a different namespace/project.",
             "name": "IMAGE_STREAM_NAMESPACE",
-            "value": "openshift",
+            "value": "jdg",
             "required": true
         },
         {
-            "description": "Comma-separated list of connector types that should be configured (defaults to 'memcached,hotrod,rest')",
+            "description": "Comma-separated list of connector types that should be configured (defaults to 'hotrod,rest')",
             "name": "INFINISPAN_CONNECTORS",
-            "value": "hotrod,memcached,rest",
+            "value": "hotrod,rest",
             "required": false
         },
         {
@@ -61,12 +61,6 @@
             "description": "",
             "name": "ENCRYPTION_REQUIRE_SSL_CLIENT_AUTH",
             "value": "",
-            "required": false
-        },
-        {
-            "description": "The name of the cache to expose through this memcached connector (defaults to 'default')",
-            "name": "MEMCACHED_CACHE",
-            "value": "default",
             "required": false
         },
         {
@@ -105,30 +99,6 @@
                 },
                 "annotations": {
                     "description": "The web server's HTTP port."
-                }
-            }
-        },
-        {
-            "kind": "Service",
-            "apiVersion": "v1",
-            "spec": {
-                "ports": [
-                    {
-                        "port": 11211,
-                        "targetPort": 11211
-                    }
-                ],
-                "selector": {
-                    "deploymentConfig": "${APPLICATION_NAME}"
-                }
-            },
-            "metadata": {
-                "name": "${APPLICATION_NAME}-memcached",
-                "labels": {
-                    "application": "${APPLICATION_NAME}"
-                },
-                "annotations": {
-                    "description": "Memcached service for clustered applications."
                 }
             }
         },
@@ -187,7 +157,12 @@
             },
             "spec": {
                 "strategy": {
-                    "type": "Recreate"
+                    "type": "Rolling",
+                    "rollingParams": {
+                        "timeoutSeconds": 120,
+                        "maxSurge": "66%",
+                        "maxUnavailable": "10%"
+                    }
                 },
                 "triggers": [
                     {
@@ -208,7 +183,7 @@
                         "type": "ConfigChange"
                     }
                 ],
-                "replicas": 1,
+                "replicas": 5,
                 "selector": {
                     "deploymentConfig": "${APPLICATION_NAME}"
                 },
@@ -262,11 +237,6 @@
                                         "protocol": "TCP"
                                     },
                                     {
-                                        "name": "memcached",
-                                        "containerPort": 11211,
-                                        "protocol": "TCP"
-                                    },
-                                    {
                                         "name": "hotrod",
                                         "containerPort": 11222,
                                         "protocol": "TCP"
@@ -308,10 +278,6 @@
                                     {
                                         "name": "HOTROD_SERVICE_NAME",
                                         "value": "${APPLICATION_NAME}-hotrod"
-                                    },
-                                    {
-                                        "name": "MEMCACHED_CACHE",
-                                        "value": "${MEMCACHED_CACHE}"
                                     },
                                     {
                                         "name": "REST_SECURITY_DOMAIN",

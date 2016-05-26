@@ -1,7 +1,7 @@
 OSE setup automation for JDG
 ============================
 
-Automates activities for setting up Openshift v3, its client and loads JBoss Data Grid templates.
+Creates a JDG cluster with proper rolling upgrade policy
 
 The credit goes to Tomas and his nice blog posts:
 * http://blog.thomasqvarnstrom.com/2015/12/enable-jboss-data-grid-in-openshift-3.html
